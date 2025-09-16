@@ -2,7 +2,21 @@
   <div class="tasks-container">
     <div class="header">
       <h2>任务管理</h2>
-      <el-button type="danger" @click="logout">退出登录</el-button>
+      <div>
+        <!-- 管理员入口 -->
+        <el-button 
+          v-if="userInfo && userInfo.role === 'admin'" 
+          @click="goToAdmin" 
+          style="margin-right: 10px;"
+        >
+          管理后台
+        </el-button>
+        <el-button type="danger" @click="logout">退出登录</el-button>
+      </div>
+    </div>
+    <!-- 用户信息显示 -->
+    <div class="user-info" v-if="userInfo">
+      欢迎，{{ userInfo.username }} ({{ userInfo.role === 'admin' ? '管理员' : '普通用户' }})
     </div>
     <el-button 
       type="primary" 
@@ -64,13 +78,22 @@ export default {
         title: '',
         description: '',
         
-      }
+      },
+      userInfo:null,
     }
   },
   async mounted() {
+    // 从本地存储获取用户信息
+    const userInfoStr = localStorage.getItem('user_info')
+    if (userInfoStr) {
+      this.userInfo = JSON.parse(userInfoStr)
+    }
     await this.loadTasks();
   },
   methods: {
+    goToAdmin() {
+      this.$router.push('/admin')
+    },
     async loadTasks() {
       try {
         const response = await api.get('/tasks/') 
@@ -143,6 +166,7 @@ export default {
       }).then(() => {
         // 清除本地存储的token
         localStorage.removeItem('access_token')
+        localStorage.removeItem('user_info')
         ElMessage.success('已退出登录')
         // 跳转到登录页
         this.$router.push('/login')
@@ -185,6 +209,12 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.user-info {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #666;
 }
 
 .add-btn {

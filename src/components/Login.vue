@@ -74,23 +74,19 @@ export default{
         // 登录处理方法
         async handleLogin(){
             try{
-                // 发送登录请求
-                const formData =  new FormData(); 
-                formData.append('username',this.form.username);
-                formData.append('password',this.form.password);
+                // 使用 URLSearchParams 发送 x-www-form-urlencoded 格式
+                const params = new URLSearchParams();
+                params.append('username', this.form.username);
+                params.append('password', this.form.password);
 
-                const response = await api.post('/login',formData)
+                const response = await api.post('/login', params);
 
-                // 保存token到本地存储
                 localStorage.setItem('access_token', response.data.access_token)
-
+                localStorage.setItem('user_info', JSON.stringify(response.data.user_info))
                 ElMessage.success('登录成功')
-
-                // 跳转到任务列表页面
                 this.$router.push('/tasks')
             }catch(error){
-                // 登录失败提示
-                console.error('登录失败',error)
+                console.error('登录失败', error)
                 ElMessage.error('登录失败: ' + (error.response?.data?.detail || '请检查用户名和密码'))
             }
         },
